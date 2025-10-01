@@ -1,6 +1,8 @@
+package GUI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedWriter;
@@ -16,18 +18,18 @@ public class RegisterUI extends JFrame {
         Font thaiFontBold = new Font("Tahoma", Font.BOLD, 16);
         Font thaiFontNormal = new Font("Tahoma", Font.PLAIN, 15);
 
-        // กำหนดฟอนต์ของ JOptionPane ให้ชัดเจน
+        // กำหนดฟอนต์ของ JOptionPane
         UIManager.put("OptionPane.messageFont", new Font("Tahoma", Font.PLAIN, 16));
         UIManager.put("OptionPane.buttonFont", new Font("Tahoma", Font.PLAIN, 14));
 
         // Container หลัก
         JPanel container = new JPanel();
         container.setBackground(new Color(246, 249, 255));
-        container.setLayout(new GridLayout(1,2,20,0));
-        container.setBorder(new EmptyBorder(15,15,15,15));
+        container.setLayout(new GridLayout(1, 2, 20, 0));
+        container.setBorder(new EmptyBorder(15, 15, 15, 15));
 
         // ----- ซ้าย -----
-        JPanel left = new JPanel(new GridLayout(3,1,0,15));
+        JPanel left = new JPanel(new GridLayout(3, 1, 0, 15));
         left.setOpaque(false);
 
         String[][] boxes = {
@@ -102,22 +104,28 @@ public class RegisterUI extends JFrame {
             String pass = new String(passwordField.getPassword());
             String confirm = new String(confirmField.getPassword());
 
-            // ตรวจสอบข้อมูล
-            if(id.isEmpty() || fname.isEmpty() || lname.isEmpty() || pass.isEmpty() || confirm.isEmpty()){
-                JOptionPane.showMessageDialog(this, "กรุณากรอกข้อมูลให้ครบทุกช่อง", "Error", JOptionPane.ERROR_MESSAGE);
+            if(id.length() != 13) {
+                JOptionPane.showMessageDialog(this, "เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            if(!pass.equals(confirm)){
-                JOptionPane.showMessageDialog(this, "รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน", "Error", JOptionPane.ERROR_MESSAGE);
+            if(fname.isEmpty() || lname.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "กรุณากรอกชื่อและนามสกุล", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if(pass.length() < 8) {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if(!pass.equals(confirm)) {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านไม่ตรงกัน", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             // บันทึกลงไฟล์
-            try(BufferedWriter bw = new BufferedWriter(new FileWriter("ีuser.csv", true))){
+            try(BufferedWriter bw = new BufferedWriter(new FileWriter("user.csv", true))){
                 bw.write("ID: " + id + "\n");
                 bw.write("ชื่อ: " + fname + "\n");
-                bw.write("สกุล: " + lname + "\n");
+                bw.write("นามสกุล: " + lname + "\n");
                 bw.write("รหัสผ่าน: " + pass + "\n");
                 bw.write("-------------------------\n");
             } catch(IOException ex){
@@ -125,10 +133,8 @@ public class RegisterUI extends JFrame {
                 return;
             }
 
-            JOptionPane.showMessageDialog(this, "ลงทะเบียนสำเร็จ!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-            this.dispose(); // ปิดหน้าลงทะเบียน
-            new Final();     // เปิดหน้าล็อกอิน
+            this.dispose(); 
+            new Login();     
         });
 
         right.add(header);
@@ -150,7 +156,6 @@ public class RegisterUI extends JFrame {
 
         setPreferredSize(new Dimension(1000, 450));
         setMinimumSize(new Dimension(1000, 450));
-
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
@@ -277,7 +282,5 @@ public class RegisterUI extends JFrame {
         }
     }
 
-    public static void main(String[] args){
-        SwingUtilities.invokeLater(Final::new);
-    }
+   
 }
