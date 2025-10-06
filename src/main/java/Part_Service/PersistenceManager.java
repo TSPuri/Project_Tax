@@ -19,6 +19,7 @@ public class PersistenceManager {
         try {
             
             String Json = new String(Files.readAllBytes(Paths.get(filePath)));
+            // แปลงเป็น object ตามที่ต้องการ
             return gson.fromJson(Json, clazz);
         } catch (Exception e) {
             System.err.println("Error reading file : " + filePath);
@@ -60,7 +61,7 @@ public class PersistenceManager {
 
             try(FileWriter writer = new FileWriter(filePath)){
                 gson.toJson(dataList, writer);
-                System.out.println("ข้อม฿ลใหม่ถูกเพิ่มลงไฟล์ : " + filePath);
+                System.out.println("ข้อมูลใหม่ถูกเพิ่มลงไฟล์ : " + filePath);
             }
         } catch (Exception e) {
            System.err.println(" Error appending to json : " + filePath);

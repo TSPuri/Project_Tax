@@ -3,6 +3,9 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
 
+import Domain.UserAccount;
+import Part_Service.PersistenceManager;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedWriter;
@@ -122,7 +125,7 @@ public class RegisterUI extends JFrame {
             }
 
             // บันทึกลงไฟล์
-            try(BufferedWriter bw = new BufferedWriter(new FileWriter("user.csv", true))){
+            /*try(BufferedWriter bw = new BufferedWriter(new FileWriter("user.csv", true))){
                 bw.write("ID: " + id + "\n");
                 bw.write("ชื่อ: " + fname + "\n");
                 bw.write("นามสกุล: " + lname + "\n");
@@ -131,11 +134,21 @@ public class RegisterUI extends JFrame {
             } catch(IOException ex){
                 JOptionPane.showMessageDialog(this, "เกิดข้อผิดพลาดในการบันทึกไฟล์", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
-            }
+            }*/
 
-            this.dispose(); 
-            new Login();     
-        });
+            //บันทึกไฟล์
+            UserAccount newUser = new UserAccount(id, fname, lname, pass);
+            // ไปรับค่าจาก Userservice โดยส่งค่า newUser ไป
+            boolean succsee = Part_Service.UserService.registerUser(newUser);
+            if(succsee){
+                JOptionPane.showConfirmDialog(this, "ลงทะเบียนสำเร็จ", "success", JOptionPane.INFORMATION_MESSAGE);
+                this.dispose(); 
+                new Login();     
+              }else{
+                JOptionPane.showMessageDialog(this, "ID นี้มีอยู่ในระบบแล้ว", "Error", JOptionPane.INFORMATION_MESSAGE);
+              } 
+
+            });
 
         right.add(header);
         right.add(taxIdField);

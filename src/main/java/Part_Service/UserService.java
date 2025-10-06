@@ -26,4 +26,18 @@ public class UserService {
         }
         return false;
     }
+    public static boolean registerUser(UserAccount newUser){
+
+        UserAccount[] users = loadUsers();
+        for (UserAccount user : users) {
+            if(user.getId().equals(newUser.getId())){
+
+                return false;
+            }
+            
+        }
+
+        PersistenceManager.appendToJsonArray("data/users.json", newUser, UserAccount.class);
+        return true;
+    }
 }

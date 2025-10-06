@@ -7,6 +7,6 @@ import Part_UI.GUI.RegisterUI;
 public class Main {
     public static void main(String[] args) {
 
-        new Login();
+        new RegisterUI();
     }
 }
