@@ -127,32 +127,20 @@ public class Login extends JFrame {
                 JOptionPane.showMessageDialog(this, "คุณต้องยอมรับเงื่อนไขก่อนเข้าสู่ระบบ", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            Map<String, String> userMap = new HashMap<>();
-            try (BufferedReader br = new BufferedReader(new FileReader("user.csv"))) {
-                String line;
-                String currentID = null;
-                while ((line = br.readLine()) != null) {
-                    line = line.trim();
-                    if (line.startsWith("ID: ")) {
-                        currentID = line.substring(4).trim();
-                    } else if (line.startsWith("รหัสผ่าน: ") && currentID != null) {
-                        String pass = line.substring(9).trim();
-                        userMap.put(currentID, pass);
-                        currentID = null;
-                    }
-                }
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "ไม่สามารถอ่านไฟล์ผู้ใช้ได้", "Error", JOptionPane.ERROR_MESSAGE);
+            //แก้ตรงนี้
+            if(!Part_Service.UserService.hasAnyUser()){
+                JOptionPane.showMessageDialog(this, "ยังไม่มีผู้ใช้ในระบบ กรุณาลงทะเบียนก่อน", "Info",JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
-
-            if (userMap.containsKey(inputID) && userMap.get(inputID).equals(inputPass)) {
-                
-            } else {
+            boolean succsee = Part_Service.UserService.validateLogin(inputID, inputPass);
+            if(succsee){
+                JOptionPane.showMessageDialog(this, "เข้่าสู่ระบบสำเร็จ", "Success", JOptionPane.INFORMATION_MESSAGE);
+            }else{
                 JOptionPane.showMessageDialog(this, "ID หรือ รหัสผ่านไม่ถูกต้อง", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+ 
+            
 
         JPanel btnPanel = new JPanel();
         btnPanel.setOpaque(false);

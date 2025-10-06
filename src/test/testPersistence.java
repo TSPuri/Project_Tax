@@ -5,9 +5,9 @@ public class TestPersistence {
     public static void main(String[] args) {
         
         DummyData data = new DummyData("ภูริ", 20, "นักศึกษาคอม");
-        PersistenceManager.appendToJsonArray("data/test_data.json", data);
+        PersistenceManager.saveToJson("data/test_data.json", data);
 
-        DummyData data2 = new DummyData("puri", 12, "null");
+       // DummyData data2 = new DummyData("puri", 12, "null");
         
         
 
