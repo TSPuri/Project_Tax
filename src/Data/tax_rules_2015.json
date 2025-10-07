@@ -1,0 +1,22 @@
+{
+    "year": 2015,
+    "description": "Thailand personal income tax 2015",
+    "expenseDeduction": {
+        "percentage": 0.5,
+        "max": 100000
+    },
+    "deductions": {
+        "personal": 60000,
+        "spouse": 60000
+    },
+    "brackets": [
+        {"min": 0, "max": 150000, "rate": 0.0},
+        {"min": 150001, "max": 300000, "rate": 0.5},
+        {"min": 300001, "max": 500000, "rate": 0.10},
+        {"min": 500001, "max": 750000, "rate": 0.15},
+        {"min": 750001, "max": 1000000, "rate": 0.20},
+        {"min": 1000001, "max": 2000000, "rate": 0.25},
+        {"min": 2000001, "max": 4000000, "rate": 0.30},
+        {"min": 4000001, "max": null, "rate": 0.35}
+    ]
+}
