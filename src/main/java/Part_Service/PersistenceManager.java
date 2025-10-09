@@ -1,71 +1,102 @@
 package Part_Service;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import com.google.gson.reflect.TypeToken;
+import java.util.*;
 
 public class PersistenceManager {
+
     
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final String[] HEADERS = {"id", "firstName", "lastName", "password"};
 
-    // อ่านไฟล์ Json แปลงไปเป้น Object
-    public static <T> T loadFromJson(String filePath, Class<T> clazz){
-        try {
-            
-            String Json = new String(Files.readAllBytes(Paths.get(filePath)));
-            // แปลงเป็น object ตามที่ต้องการ
-            return gson.fromJson(Json, clazz);
-        } catch (Exception e) {
-            System.err.println("Error reading file : " + filePath);
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    //เขียน Object ลง Json
-    public static <T> void saveToJson(String filePath, T Object){
-        try (FileWriter writer = new FileWriter(filePath)){
-            
-            gson.toJson(Object, writer);
-            System.out.println("File saved successfully : " + filePath);
-        } catch (Exception e) {
-            
-            System.err.println("Error saving file : " + filePath);
+    
+    public static void saveToCsv(String filePath, String[] headers, String[] data) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter(filePath))) {
+            pw.println("[");
+            pw.println("  {");
+            for (int i = 0; i < headers.length; i++) {
+                pw.printf("    \"%s\": \"%s\"%s%n", headers[i], data[i], (i < headers.length - 1 ? "," : ""));
+            }
+            pw.println("  }");
+            pw.println("]");
+            System.out.println("เขียนไฟล์ใหม่เรียบร้อย: " + filePath);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
-    // เขียนเพิ่มลง JSON โดยไม่ลบของเก่า
-    public static <T> void appendToJsonArray(String filePath,T newObject,Class<T> clazz){
-        try {
-            
-            List<T> dataList = new ArrayList<>();
-            File file = new File(filePath);
 
-            if(file.exists()){
-                String json = new String(Files.readAllBytes(Paths.get(filePath)));
-                if(!json.isEmpty()){
-                    //แปลง Json เป็น List<T>
-                    dataList = gson.fromJson(json, TypeToken.getParameterized(List.class,  clazz).getType());
+    
+    public static void appendToCsv(String filePath, String[] data) {
+        try {
+            List<String> lines = new ArrayList<>(Files.readAllLines(Paths.get(filePath)));
+            
+            if (lines.size() > 0 && lines.get(lines.size() - 1).trim().equals("]")) {
+                lines.remove(lines.size() - 1);
+            }
+
+            lines.add("  ,{");
+            for (int i = 0; i < HEADERS.length; i++) {
+                lines.add(String.format("    \"%s\": \"%s\"%s", HEADERS[i], data[i], (i < HEADERS.length - 1 ? "," : "")));
+            }
+            lines.add("  }");
+            lines.add("]");
+
+            Files.write(Paths.get(filePath), lines);
+            System.out.println("เพิ่มผู้ใช้ใหม่ลงไฟล์แล้ว: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<String[]> loadFromCsv(String filePath) {
+        List<String[]> rows = new ArrayList<>();
+    
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(filePath), StandardCharsets.UTF_8))) {
+    
+            String line;
+            Map<String, String> current = new LinkedHashMap<>();
+    
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+    
+                // ถ้าเจอบรรทัดเปิด object ใหม่
+                if (line.equals("{") || line.equals(",{")) {
+                    current = new LinkedHashMap<>();
                 }
-
+                // ถ้าเจอบรรทัดข้อมูลจริง เช่น "id": "123"
+                else if (line.startsWith("\"")) {
+                    String[] parts = line.replace("\"", "").split(":");
+                    if (parts.length >= 2) {
+                        String key = parts[0].trim();
+                        String value = parts[1].trim().replace(",", "");
+                        current.put(key, value);
+                    }
+                }
+                // ถ้าเจอปิด object
+                else if (line.equals("}") || line.equals("},")) {
+                    if (!current.isEmpty()) {
+                        rows.add(new String[]{
+                                current.getOrDefault("id", ""),
+                                current.getOrDefault("firstName", ""),
+                                current.getOrDefault("lastName", ""),
+                                current.getOrDefault("password", "")
+                        });
+                    }
+                }
             }
-            // เพิ่มข่้อม฿ลใหม่เข้า list
-            dataList.add(newObject);
-
-            try(FileWriter writer = new FileWriter(filePath)){
-                gson.toJson(dataList, writer);
-                System.out.println("ข้อมูลใหม่ถูกเพิ่มลงไฟล์ : " + filePath);
-            }
-        } catch (Exception e) {
-           System.err.println(" Error appending to json : " + filePath);
-           e.printStackTrace();
+    
+            System.out.println("โหลดข้อมูล JSON-like สำเร็จ: " + rows.size() + " แถว");
+    
+        } catch (FileNotFoundException e) {
+            System.err.println("ไม่พบไฟล์: " + filePath);
+        } catch (IOException e) {
+            System.err.println("อ่านไฟล์ผิดพลาด: " + e.getMessage());
         }
+    
+        return rows;
     }
+    
 }

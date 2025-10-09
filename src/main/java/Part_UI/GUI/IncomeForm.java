@@ -100,16 +100,20 @@ public class IncomeForm extends JFrame {
             bonusField.setText("");
             otherField.setText("");
         });
-        nextButton.addActionListener(e ->
-            JOptionPane.showMessageDialog(this, "ข้อมูลถูกบันทึกแล้ว!", "Success", JOptionPane.INFORMATION_MESSAGE)
+        nextButton.addActionListener(e -> {
+            this.dispose();
+            new TaxDeduction().setVisible(true);
+        }
+            
         );
-
+        backButton.addActionListener(e -> {
+            this.dispose();
+            new Login().setVisible(true);
+        });
         setVisible(true);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(IncomeForm::new);
-    }
+    
 }
 
 

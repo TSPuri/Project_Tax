@@ -1,16 +1,15 @@
 package Part_UI.GUI;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import Part_Service.UserService;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Login extends JFrame {
 
     public Login() {
-        setTitle("Login");
+        setTitle("เข้าสู่ระบบ");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         Font thaiFontBold = new Font("Tahoma", Font.BOLD, 16);
@@ -66,8 +65,8 @@ public class Login extends JFrame {
         header.setAlignmentX(Component.CENTER_ALIGNMENT);
         header.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        WebTextField ID = new WebTextField("ID", thaiFontNormal);
-        WebPasswordField password = new WebPasswordField("รหัสผ่าน", thaiFontNormal);
+        WebTextField ID = new WebTextField("เลขประจำตัว 13 หลัก", thaiFontNormal);
+        WebPasswordField password = new WebPasswordField("รหัสผ่าน (อย่างน้อย 8 ตัว)", thaiFontNormal);
         ID.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         password.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
@@ -83,8 +82,8 @@ public class Login extends JFrame {
         forgot.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                dispose();          
-                new Password();     
+                dispose();
+                new Password(); // สมมติว่ามีหน้าเปลี่ยนรหัสผ่าน
             }
 
             @Override
@@ -109,11 +108,13 @@ public class Login extends JFrame {
         WebButtonStyle.apply(loginBtn, thaiFontNormal, new Color(13, 43, 97), new Color(19, 61, 132));
         WebButtonStyle.apply(registerBtn, thaiFontNormal, new Color(13, 43, 97), new Color(19, 61, 132));
 
+        // ===== ปุ่มลงทะเบียน =====
         registerBtn.addActionListener(e -> {
             dispose();
-            new RegisterUI(); 
+            new RegisterUI();
         });
 
+        // ===== ปุ่มเข้าสู่ระบบ =====
         loginBtn.addActionListener(e -> {
             String inputID = ID.getText().trim();
             String inputPass = new String(password.getPassword());
@@ -123,24 +124,30 @@ public class Login extends JFrame {
                 return;
             }
 
+            if (inputID.length() != 13) {
+                JOptionPane.showMessageDialog(this, "เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (inputPass.length() < 8) {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             if (!agree.isSelected()) {
                 JOptionPane.showMessageDialog(this, "คุณต้องยอมรับเงื่อนไขก่อนเข้าสู่ระบบ", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            //แก้ตรงนี้
-            if(!Part_Service.UserService.hasAnyUser()){
-                JOptionPane.showMessageDialog(this, "ยังไม่มีผู้ใช้ในระบบ กรุณาลงทะเบียนก่อน", "Info",JOptionPane.INFORMATION_MESSAGE);
-                return;
-            }
-            boolean succsee = Part_Service.UserService.validateLogin(inputID, inputPass);
-            if(succsee){
-                JOptionPane.showMessageDialog(this, "เข้่าสู่ระบบสำเร็จ", "Success", JOptionPane.INFORMATION_MESSAGE);
-            }else{
-                JOptionPane.showMessageDialog(this, "ID หรือ รหัสผ่านไม่ถูกต้อง", "Error", JOptionPane.ERROR_MESSAGE);
+
+            boolean success = UserService.loginUser(inputID, inputPass);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "เข้าสู่ระบบสำเร็จ", "Success", JOptionPane.INFORMATION_MESSAGE);
+                this.dispose();
+                new IncomeForm().setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านหรือไอดีไม่ถูกต้อง", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
- 
-            
 
         JPanel btnPanel = new JPanel();
         btnPanel.setOpaque(false);
@@ -182,10 +189,6 @@ public class Login extends JFrame {
                 public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
                 public void mouseExited(MouseEvent e) { hover = false; repaint(); }
             });
-            addFocusListener(new FocusAdapter() {
-                public void focusGained(FocusEvent e) { repaint(); }
-                public void focusLost(FocusEvent e) { repaint(); }
-            });
         }
 
         @Override
@@ -194,8 +197,7 @@ public class Login extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(new Color(235, 245, 255));
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-            if (isFocusOwner()) g2.setColor(new Color(25, 118, 210));
-            else if (hover) g2.setColor(new Color(100, 149, 237));
+            if (hover) g2.setColor(new Color(100, 149, 237));
             else g2.setColor(Color.GRAY);
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
@@ -223,10 +225,6 @@ public class Login extends JFrame {
                 public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
                 public void mouseExited(MouseEvent e) { hover = false; repaint(); }
             });
-            addFocusListener(new FocusAdapter() {
-                public void focusGained(FocusEvent e) { repaint(); }
-                public void focusLost(FocusEvent e) { repaint(); }
-            });
         }
 
         @Override
@@ -235,8 +233,7 @@ public class Login extends JFrame {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(new Color(235, 245, 255));
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
-            if (isFocusOwner()) g2.setColor(new Color(25, 118, 210));
-            else if (hover) g2.setColor(new Color(100, 149, 237));
+            if (hover) g2.setColor(new Color(100, 149, 237));
             else g2.setColor(Color.GRAY);
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
@@ -285,5 +282,4 @@ public class Login extends JFrame {
             super(Color.LIGHT_GRAY, 1, true);
         }
     }
-
 }
