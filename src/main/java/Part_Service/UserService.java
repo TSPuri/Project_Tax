@@ -1,43 +1,62 @@
 package Part_Service;
-import Domain.*;
+
+import java.io.*;
+import java.util.*;
+
 public class UserService {
-    
-    private static final String USER_FILE = "data/users.json";
 
-    //โหลดผู้ใช้ทั้งหมดจากไฟล์
-    public static UserAccount[] loadUsers(){
-        UserAccount[] users = PersistenceManager.loadFromJson(USER_FILE, UserAccount[].class);
-        return (users != null) ? users : new UserAccount[0];
+    private static final String FILE_PATH = "data/users.csv";
+    private static final String[] HEADERS = {"id", "firstName", "lastName", "password"};
+
+    public static boolean registerUser(String id, String firstName, String lastName, String password) {
+        File file = new File(FILE_PATH);
+        boolean exists = file.exists();
+
+        List<String[]> existing = PersistenceManager.loadFromCsv(FILE_PATH);
+        for (String[] row : existing) {
+            if (row[0].equals(id)) {
+                System.out.println("⚠️ ID นี้มีอยู่แล้วในระบบ");
+                return false;
+            }
+        }
+
+        String[] data = {id, firstName, lastName, password};
+        if (!exists) {
+            
+            PersistenceManager.saveToCsv(FILE_PATH, HEADERS, data);
+        } else {
+           
+            PersistenceManager.appendToCsv(FILE_PATH, data);
+        }
+        return true;
     }
 
-    //ตรวจว่ามีผู้ใช้ในระบบมั้ย
-    public static boolean hasAnyUser(){
-        return loadUsers().length > 0;
-    }
+    public static boolean loginUser(String id, String password) {
+        List<String[]> users = PersistenceManager.loadFromCsv(FILE_PATH);
 
-    //ตรวจสอบล็อกอิน
-    public static boolean validateLogin(String inputId, String inputPass){
-        UserAccount[] users = loadUsers();
-        for (UserAccount user : users) {
-            if(user.getId().equals(inputId) && user.getPassword().equals(inputPass)){
+        for (String[] row : users) {
+            if (row.length < 4 || row[0].equals("id")) continue;
 
+            String savedId = row[0];
+            String savedPassword = row[3];
+
+            if (savedId.equals(id) && savedPassword.equals(password)) {
+                System.out.println("เข้าสู่ระบบสำเร็จ: " + row[1] + " " + row[2]);
                 return true;
             }
         }
+        System.out.println("รหัสผ่านหรือไอดีไม่ถูกต้อง");
         return false;
     }
-    public static boolean registerUser(UserAccount newUser){
 
-        UserAccount[] users = loadUsers();
-        for (UserAccount user : users) {
-            if(user.getId().equals(newUser.getId())){
-
-                return false;
-            }
-            
+    public static void showAllUsers() {
+        List<String[]> users = PersistenceManager.loadFromCsv(FILE_PATH);
+        System.out.println("รายชื่อผู้ใช้ทั้งหมด:");
+        System.out.printf("%-15s %-15s %-15s %-15s%n", "ID", "First Name", "Last Name", "Password");
+        System.out.println("--------------------------------------------------------");
+        for (String[] row : users) {
+            if (row[0].equals("id")) continue;
+            System.out.printf("%-15s %-15s %-15s %-15s%n", row[0], row[1], row[2], row[3]);
         }
-
-        PersistenceManager.appendToJsonArray("data/users.json", newUser, UserAccount.class);
-        return true;
     }
 }
