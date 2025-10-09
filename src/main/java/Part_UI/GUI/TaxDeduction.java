@@ -1,171 +1,283 @@
 package Part_UI.GUI;
+
 import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.*;
+import Part_Service.UserService;
 import java.awt.*;
+import java.awt.event.*;
 
-public class TaxDeduction extends JFrame {
+public class RegisterUI extends JFrame {
 
-    public TaxDeduction() {
-        setTitle("กรอกข้อมูลเพื่อคำนวณภาษี");
+    public RegisterUI() {
+        setTitle("ลงทะเบียนเข้าใช้งาน");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1000, 600);
-        setLocationRelativeTo(null);
-        getContentPane().setBackground(new Color(210, 230, 240)); // ฟ้าอ่อนพื้นหลัง
-        setLayout(new BorderLayout());
 
-        // ===== แถบบน: ปุ่มย้อนกลับซ้าย + หัวข้อกลางเป๊ะ + ช่องว่างขวาถ่วงน้ำหนัก =====
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setOpaque(false);
+        Font thaiFontBold = new Font("Tahoma", Font.BOLD, 16);
+        Font thaiFontNormal = new Font("Tahoma", Font.PLAIN, 15);
 
-        // ปุ่มย้อนกลับ
-        JButton backButton = new JButton("ย้อนกลับ");
-        backButton.setFont(new Font("Tahoma", Font.BOLD, 16));
-        backButton.setBackground(new Color(200, 220, 210));
-        backButton.setForeground(Color.BLACK);
-        backButton.setFocusPainted(false);
-        backButton.setBorder(new RoundedBorder(15));
-        backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        UIManager.put("OptionPane.messageFont", thaiFontNormal);
+        UIManager.put("OptionPane.buttonFont", thaiFontNormal);
 
-        // panel ซ้าย: ปุ่มย้อนกลับ
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
-        leftPanel.setOpaque(false);
-        leftPanel.add(backButton);
+        JPanel container = new JPanel();
+        container.setBackground(new Color(246, 249, 255));
+        container.setLayout(new GridLayout(1, 2, 20, 0));
+        container.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // panel กลาง: หัวข้อ
-        JLabel titleLabel = new JLabel("กรอกข้อมูลเพื่อคำนวณภาษี", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Tahoma", Font.BOLD, 24));
-        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        JPanel centerPanelTop = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
-        centerPanelTop.setOpaque(false);
-        centerPanelTop.add(titleLabel);
+        // ===== Left Panel =====
+        JPanel left = new JPanel(new GridLayout(3, 1, 0, 15));
+        left.setOpaque(false);
 
-        // panel ขวา: กล่องว่างถ่วง layout
-        JPanel rightPanel = new JPanel();
-        rightPanel.setOpaque(false);
-        rightPanel.setPreferredSize(leftPanel.getPreferredSize());
+        String[][] boxes = {
+                {"เลขประจำตัวผู้เสียภาษี", "เลขประจำตัวผู้เสียภาษีคือเลขบัตรประชาชน 13 หลัก"},
+                {"เข้าสู่ระบบ", "กรอกเลขประจำตัวและรหัสผ่าน คือคนที่เคยเข้ามาใช้งานแล้ว"},
+                {"ลงทะเบียน", "คนที่ยังไม่เคยใช้งาน กดลงทะเบียน กรอกเลขบัตรประชาชน ชื่อ-นามสกุล และรหัสผ่าน"}
+        };
 
-        // รวมสามส่วนเข้าด้วยกัน
-        topPanel.add(leftPanel, BorderLayout.WEST);
-        topPanel.add(centerPanelTop, BorderLayout.CENTER);
-        topPanel.add(rightPanel, BorderLayout.EAST);
-        add(topPanel, BorderLayout.NORTH);
+        for (String[] b : boxes) {
+            JPanel box = new JPanel(new BorderLayout());
+            box.setBackground(Color.WHITE);
+            box.setBorder(new RoundedBorder(12));
 
-        // ===== กล่องซ้าย: ครอบครัว =====
-        JPanel familyPanel = createRoundedPanel("ครอบครัว");
-        familyPanel.add(labelWithUnder("สถานะสมรส :", new JComboBox<>(new String[]{"โสด", "สมรส", "หย่า"})));
-        familyPanel.add(labelWithUnder("ค่าลดหย่อนบิดา-มารดา :", checkGroup("บิดา", "มารดา")));
-        familyPanel.add(labelWithUnder("ลดหย่อนผู้พิการหรือทุพพลภาพ :", checkGroup("บิดา/มารดา", "ญาติ (เช่น พี่, น้อง ฯลฯ)")));
-        familyPanel.add(labelWithUnder("จำนวนบุตร :", new JTextField(12))); 
-        // ===== กล่องกลาง: กองทุน/ประกันสังคม =====
-        JPanel fundPanel = createRoundedPanel("กองทุน และประกันสังคม");
-        fundPanel.add(labelWithUnder("ค่าลดหย่อนกองทุนสำรองเลี้ยงชีพ (บาท) :", new JTextField(12)));
-        fundPanel.add(labelWithUnder("เงินประกันสังคม (บาท) :", new JTextField(12)));
-        fundPanel.add(labelWithUnder("ดอกเบี้ยซื้อที่อยู่อาศัย (บาท) :", new JTextField(12)));
+            JLabel title = new JLabel(b[0], SwingConstants.CENTER);
+            title.setOpaque(true);
+            title.setBackground(new Color(255, 193, 7));
+            title.setFont(thaiFontBold);
+            title.setBorder(new EmptyBorder(8, 0, 8, 0));
 
-        // ===== กล่องขวา: ประกัน/กองทุนอื่นๆ =====
-        JPanel insurancePanel = createRoundedPanel("ประกันและกองทุนอื่นๆ");
-        insurancePanel.add(labelWithUnder("เบี้ยประกันชีวิต (บาท) :", new JTextField(12)));
-        insurancePanel.add(labelWithUnder("เบี้ยประกันสุขภาพ (บาท) :", new JTextField(12)));
-        insurancePanel.add(labelWithUnder("กองทุนอื่นๆ (บาท) :", new JTextField(12)));
+            JLabel desc = new JLabel("<html><div style='text-align:center;'>" + b[1] + "</div></html>", SwingConstants.CENTER);
+            desc.setOpaque(true);
+            desc.setBackground(new Color(25, 118, 210));
+            desc.setForeground(Color.WHITE);
+            desc.setFont(thaiFontNormal);
+            desc.setBorder(new EmptyBorder(8, 8, 8, 8));
 
-        // ===== รวมสามกล่องกลาง =====
-        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 20));
-        centerPanel.setOpaque(false);
-        centerPanel.add(familyPanel);
-        centerPanel.add(fundPanel);
-        centerPanel.add(insurancePanel);
+            box.add(title, BorderLayout.NORTH);
+            box.add(desc, BorderLayout.CENTER);
+            left.add(box);
+        }
 
-        // ห่อด้วย panel ใหญ่เพื่อดันลงกลาง
-        JPanel centerWrapper = new JPanel(new GridBagLayout());
-        centerWrapper.setOpaque(false);
-        centerWrapper.add(centerPanel, new GridBagConstraints());
-        add(centerWrapper, BorderLayout.CENTER);
+        // ===== Right Panel =====
+        JPanel right = new JPanel();
+        right.setLayout(new BoxLayout(right, BoxLayout.Y_AXIS));
+        right.setBackground(new Color(232, 241, 251));
+        right.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        // ===== ปุ่มล่าง =====
-        JButton clearBtn = new JButton("ล้างข้อมูล");
-        clearBtn.setFont(new Font("Tahoma", Font.BOLD, 16));
-        clearBtn.setBackground(new Color(255, 200, 0));
-        clearBtn.setFocusPainted(false);
-        clearBtn.setBorder(new RoundedBorder(12));
+        JLabel header = new JLabel("ลงทะเบียนเข้าใช้งาน", SwingConstants.CENTER);
+        header.setFont(thaiFontBold);
+        header.setAlignmentX(Component.CENTER_ALIGNMENT);
+        header.setBorder(new EmptyBorder(0, 0, 15, 0));
 
-        JButton calcBtn = new JButton("คำนวณ");
-        calcBtn.setFont(new Font("Tahoma", Font.BOLD, 16));
-        calcBtn.setBackground(new Color(30, 60, 120));
-        calcBtn.setForeground(Color.WHITE);
-        calcBtn.setFocusPainted(false);
-        calcBtn.setBorder(new RoundedBorder(12));
+        WebTextField taxIdField = new WebTextField("เลขประจำตัวผู้เสียภาษี (13 หลัก)", thaiFontNormal);
+        WebTextField firstNameField = new WebTextField("ชื่อ", thaiFontNormal);
+        WebTextField lastNameField = new WebTextField("นามสกุล", thaiFontNormal);
+        WebPasswordField passwordField = new WebPasswordField("รหัสผ่าน (อย่างน้อย 8 ตัว)", thaiFontNormal);
+        WebPasswordField confirmField = new WebPasswordField("ยืนยันรหัสผ่าน", thaiFontNormal);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 50, 15));
-        buttonPanel.setOpaque(false);
-        buttonPanel.add(clearBtn);
-        buttonPanel.add(calcBtn);
-        add(buttonPanel, BorderLayout.SOUTH);
+        ((AbstractDocument) taxIdField.getDocument()).setDocumentFilter(new DigitFilter());
+        ((AbstractDocument) firstNameField.getDocument()).setDocumentFilter(new AlphaFilter());
+        ((AbstractDocument) lastNameField.getDocument()).setDocumentFilter(new AlphaFilter());
 
-        // ===== Event ปุ่มย้อนกลับ =====
-        backButton.addActionListener(e -> {
-            this.dispose();
-            new IncomeForm().setVisible(true);
+        taxIdField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        firstNameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        lastNameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        confirmField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        JButton registerBtn = new JButton("ลงทะเบียน");
+        WebButtonStyle.apply(registerBtn, thaiFontNormal, new Color(13, 43, 97), new Color(19, 61, 132));
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        btnPanel.setOpaque(false);
+        btnPanel.add(registerBtn);
+
+        // ===== Action ปุ่มลงทะเบียน =====
+        registerBtn.addActionListener(e -> {
+            String id = taxIdField.getText().trim();
+            String fname = firstNameField.getText().trim();
+            String lname = lastNameField.getText().trim();
+            String pass = new String(passwordField.getPassword());
+            String confirm = new String(confirmField.getPassword());
+
+            if (id.length() != 13) {
+                JOptionPane.showMessageDialog(this, "เลขประจำตัวผู้เสียภาษีต้องมี 13 หลัก", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (fname.isEmpty() || lname.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "กรุณากรอกชื่อและนามสกุล", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (pass.length() < 8) {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!pass.equals(confirm)) {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านไม่ตรงกัน", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            //  ใช้ UserService.registerUser แบบ CSV
+            boolean success = UserService.registerUser(id, fname, lname, pass);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "ลงทะเบียนสำเร็จ", "Success", JOptionPane.INFORMATION_MESSAGE);
+                this.dispose();
+                new Login();
+            } else {
+                JOptionPane.showMessageDialog(this, "ID นี้มีอยู่ในระบบแล้ว", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
+        right.add(header);
+        right.add(taxIdField);
+        right.add(Box.createVerticalStrut(10));
+        right.add(firstNameField);
+        right.add(Box.createVerticalStrut(10));
+        right.add(lastNameField);
+        right.add(Box.createVerticalStrut(10));
+        right.add(passwordField);
+        right.add(Box.createVerticalStrut(10));
+        right.add(confirmField);
+        right.add(Box.createVerticalStrut(15));
+        right.add(btnPanel);
+
+        container.add(left);
+        container.add(right);
+        add(container);
+
+        setPreferredSize(new Dimension(1000, 450));
+        setMinimumSize(new Dimension(1000, 450));
+        pack();
+        setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    // ===== กล่องโค้ง =====
-    private JPanel createRoundedPanel(String title) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setOpaque(true);
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                new EmptyBorder(10, 10, 10, 10),
-                new TitledBorder(null, title, TitledBorder.CENTER, TitledBorder.TOP,
-                        new Font("Tahoma", Font.BOLD, 16))
-        ));
-        panel.setPreferredSize(new Dimension(270, 300));
-        return panel;
-    }
+    // ===== Custom TextField =====
+    static class WebTextField extends JTextField {
+        private String placeholder;
+        private boolean hover = false;
 
-    // ===== Label + Component ใต้ =====
-    private JPanel labelWithUnder(String labelText, JComponent comp) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(5, 10, 3, 10);
+        public WebTextField(String placeholder, Font font) {
+            this.placeholder = placeholder;
+            setFont(font);
+            setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+            setOpaque(false);
+            addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
+                public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+            });
+        }
 
-        JLabel label = new JLabel("<html>" + labelText + "</html>");
-        label.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        panel.add(label, gbc);
-
-        gbc.gridy++;
-        gbc.insets = new Insets(3, 10, 8, 10);
-        panel.add(comp, gbc);
-
-        return panel;
-    }
-
-    // ===== กลุ่ม checkbox =====
-    private JPanel checkGroup(String... names) {
-        JPanel group = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        group.setOpaque(false);
-        for (String n : names) group.add(new JCheckBox(n));
-        return group;
-    }
-
-    // ===== ขอบโค้งปุ่ม =====
-    private static class RoundedBorder extends AbstractBorder {
-        private int radius;
-        RoundedBorder(int r) { radius = r; }
         @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(Color.GRAY);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(235, 245, 255));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+            g2.setColor(hover ? new Color(100, 149, 237) : Color.GRAY);
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
+            super.paintComponent(g);
+            if (getText().isEmpty() && !isFocusOwner()) {
+                g2.setColor(Color.GRAY);
+                Insets insets = getInsets();
+                g2.drawString(placeholder, insets.left + 5, getHeight() / 2 + g2.getFont().getSize() / 2 - 2);
+            }
+            g2.dispose();
+        }
+    }
+
+    // ===== Custom PasswordField =====
+    static class WebPasswordField extends JPasswordField {
+        private String placeholder;
+        private boolean hover = false;
+
+        public WebPasswordField(String placeholder, Font font) {
+            this.placeholder = placeholder;
+            setFont(font);
+            setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+            setOpaque(false);
+            addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) { hover = true; repaint(); }
+                public void mouseExited(MouseEvent e) { hover = false; repaint(); }
+            });
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(235, 245, 255));
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+            g2.setColor(hover ? new Color(100, 149, 237) : Color.GRAY);
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
+            super.paintComponent(g);
+            if (getPassword().length == 0 && !isFocusOwner()) {
+                g2.setColor(Color.GRAY);
+                Insets insets = getInsets();
+                g2.drawString(placeholder, insets.left + 5, getHeight() / 2 + g2.getFont().getSize() / 2 - 2);
+            }
+            g2.dispose();
+        }
+    }
+
+    // ===== Custom Button Style =====
+    static class WebButtonStyle {
+        public static void apply(JButton b, Font font, Color normal, Color hover) {
+            b.setFont(font);
+            b.setFocusPainted(false);
+            b.setForeground(Color.WHITE);
+            b.setBackground(normal);
+            b.setOpaque(false);
+            b.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+            b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            b.setPreferredSize(new Dimension(120, 40));
+            b.addMouseListener(new MouseAdapter() {
+                public void mouseEntered(MouseEvent e) { b.setBackground(hover); }
+                public void mouseExited(MouseEvent e) { b.setBackground(normal); }
+            });
+            b.setUI(new javax.swing.plaf.basic.BasicButtonUI() {
+                @Override
+                public void paint(Graphics g, JComponent c) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(b.getBackground());
+                    g2.fillRoundRect(0, 0, b.getWidth(), b.getHeight(), 30, 30);
+                    super.paint(g2, c);
+                    g2.dispose();
+                }
+            });
+        }
+    }
+
+    // ===== Rounded Border =====
+    static class RoundedBorder extends javax.swing.border.LineBorder {
+        public RoundedBorder(int radius) {
+            super(Color.LIGHT_GRAY, 1, true);
+        }
+    }
+
+    // ===== Filter ให้กรอกได้เฉพาะตัวเลข =====
+    static class DigitFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            if (string.matches("\\d+")) super.insertString(fb, offset, string, attr);
+        }
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            if (text.matches("\\d+")) super.replace(fb, offset, length, text, attrs);
+        }
+    }
+
+    // ===== Filter ให้กรอกได้เฉพาะตัวอักษร =====
+    static class AlphaFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            if (string.matches("[a-zA-Zก-๙\\s]+")) super.insertString(fb, offset, string, attr);
+        }
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            if (text.matches("[a-zA-Zก-๙\\s]+")) super.replace(fb, offset, length, text, attrs);
         }
     }
 }
