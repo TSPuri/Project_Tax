@@ -1,13 +1,18 @@
 //package Part_UI.GUI.*;
+//package Part_UI.GUI.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import Part_Service.PasswordValidator;
+
 
 public class RegisterUI extends JFrame {
 
@@ -89,6 +94,31 @@ public class RegisterUI extends JFrame {
         passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         confirmField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
+        // ✅ เพิ่มป้ายแสดงความปลอดภัยของรหัสผ่าน
+        JLabel strengthLabel = new JLabel("กรุณากรอกรหัสผ่าน");
+        strengthLabel.setFont(thaiFontNormal);
+        strengthLabel.setForeground(Color.GRAY);
+        strengthLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // ✅ ตรวจสอบรหัสแบบเรียลไทม์
+        passwordField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { check(); }
+            public void removeUpdate(DocumentEvent e) { check(); }
+            public void changedUpdate(DocumentEvent e) { check(); }
+
+            private void check() {
+                String pass = new String(passwordField.getPassword());
+                String result = PasswordValidator.checkStrength(pass);
+                strengthLabel.setText(result);
+
+                if (result.contains("อ่อนมาก")) strengthLabel.setForeground(Color.RED);
+                else if (result.contains("กลาง")) strengthLabel.setForeground(new Color(255,140,0));
+                else if (result.contains("ค่อนข้าง")) strengthLabel.setForeground(new Color(34,139,34));
+                else if (result.contains("สูงสุด")) strengthLabel.setForeground(new Color(0,128,0));
+                else strengthLabel.setForeground(Color.GRAY);
+            }
+        });
+
         JPanel btnPanel = new JPanel();
         btnPanel.setOpaque(false);
         btnPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0,0));
@@ -112,8 +142,11 @@ public class RegisterUI extends JFrame {
                 JOptionPane.showMessageDialog(this, "กรุณากรอกชื่อและนามสกุล", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            if(pass.length() < 8) {
-                JOptionPane.showMessageDialog(this, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", "Error", JOptionPane.ERROR_MESSAGE);
+            // ✅ ใช้ PasswordValidator ตรวจสอบความแข็งแรงก่อนบันทึก
+            if (!PasswordValidator.isStrongEnough(pass)) {
+                JOptionPane.showMessageDialog(this,
+                    "รหัสผ่านไม่ปลอดภัยพอ (ต้องมี ≥8 ตัว มีตัวพิมพ์ใหญ่ และตัวเลข)",
+                    "รหัสผ่านไม่ปลอดภัย", JOptionPane.WARNING_MESSAGE);
                 return;
             }
             if(!pass.equals(confirm)) {
@@ -137,6 +170,7 @@ public class RegisterUI extends JFrame {
             new Login();     
         });
 
+        // ===== เพิ่ม Layout ฝั่งขวา =====
         right.add(header);
         right.add(taxIdField);
         right.add(Box.createVerticalStrut(10));
@@ -145,8 +179,10 @@ public class RegisterUI extends JFrame {
         right.add(lastNameField);
         right.add(Box.createVerticalStrut(10));
         right.add(passwordField);
+        right.add(Box.createVerticalStrut(5));
         right.add(Box.createVerticalStrut(10));
         right.add(confirmField);
+        right.add(strengthLabel); 
         right.add(Box.createVerticalStrut(15));
         right.add(btnPanel);
 
@@ -160,6 +196,7 @@ public class RegisterUI extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
     }
+
 
     // ===== Custom TextField =====
     static class WebTextField extends JTextField {
