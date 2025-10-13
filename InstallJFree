@@ -1,0 +1,4 @@
+java -cp ".:lib/jfreechart-1.0.19.jar:lib/jcommon-1.0.23.jar" Lib/Test.java
+java -cp ".:lib/jfreechart-1.0.19.jar:lib/jcommon-1.0.23.jar" Lib.Test
+
+//เอาไปรันทีละบรรทัด แยกกันรัน
