@@ -8,6 +8,6 @@ public class Main{
         UIManager.put("OptionPane.messageFont", new Font("Tahoma", Font.PLAIN, 16));
         UIManager.put("OptionPane.buttonFont", new Font("Tahoma", Font.PLAIN, 14));
         UIManager.put("OptionPane.messageForeground", Color.BLACK);
-        new Login();
+       new Login();
     }
 }
