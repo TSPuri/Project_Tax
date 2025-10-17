@@ -1,17 +1,12 @@
 //package GUI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import Part_Service.PasswordValidator;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
-
 
 public class Password extends JFrame {
 
@@ -83,50 +78,13 @@ public class Password extends JFrame {
         passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         confirmField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
-        // ป้ายแสดงความปลอดภัยของรหัสผ่าน
-        JLabel strengthLabel = new JLabel("กรุณากรอกรหัสผ่าน");
-        strengthLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        strengthLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        strengthLabel.setFont(thaiFontNormal);
-        strengthLabel.setForeground(Color.GRAY);
-
-        // ตรวจสอบรหัสแบบเรียลไทม์
-        passwordField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { check(); }
-            public void removeUpdate(DocumentEvent e) { check(); }
-            public void changedUpdate(DocumentEvent e) { check(); }
-
-            private void check() {
-                String pass = new String(passwordField.getPassword());
-                String result = PasswordValidator.checkStrength(pass);
-                strengthLabel.setText(result);
-
-                if (result.contains("อ่อนมาก")) strengthLabel.setForeground(Color.RED);
-                else if (result.contains("กลาง")) strengthLabel.setForeground(new Color(255, 140, 0));
-                else if (result.contains("ค่อนข้าง")) strengthLabel.setForeground(new Color(34, 139, 34));
-                else if (result.contains("สูงสุด")) strengthLabel.setForeground(new Color(0, 128, 0));
-                else strengthLabel.setForeground(Color.GRAY);
-            }
-        });
-
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));;
+        JPanel btnPanel = new JPanel();
         btnPanel.setOpaque(false);
-
-         JButton backBtn = new JButton("ย้อนกลับ");
-        WebButtonStyle.apply(backBtn, thaiFontNormal, new Color(13, 43, 97), new Color(19, 61, 132));
-        backBtn.setPreferredSize(new Dimension(150, 40));
-
+        btnPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         JButton changeBtn = new JButton("เปลี่ยนรหัสผ่าน");
         WebButtonStyle.apply(changeBtn, thaiFontNormal, new Color(13, 43, 97), new Color(19, 61, 132));
         changeBtn.setPreferredSize(new Dimension(150, 40));
-
-        btnPanel.add(backBtn);
         btnPanel.add(changeBtn);
-        
-        backBtn.addActionListener(e -> {
-            this.dispose();
-            new Login();
-        });
 
         changeBtn.addActionListener(e -> {
             String id = taxIdField.getText().trim();
@@ -140,18 +98,17 @@ public class Password extends JFrame {
                 return;
             }
 
-             if (!PasswordValidator.isStrongEnough(newPass)) {
-                JOptionPane.showMessageDialog(this,
-                        "รหัสผ่านไม่ปลอดภัยพอ (ต้องมี ≥8 ตัว มีตัวพิมพ์ใหญ่ และตัวเลข)",
-                        "รหัสผ่านไม่ปลอดภัย", JOptionPane.WARNING_MESSAGE);
+            if (newPass.length() < 8) {
+                JOptionPane.showMessageDialog(this, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
             if (!newPass.equals(confirmPass)) {
                 JOptionPane.showMessageDialog(this, "รหัสผ่านไม่ตรงกัน", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            File file = new File("Part_Data/users.csv");
+            File file = new File("users.csv");
             if (!file.exists()) {
                 JOptionPane.showMessageDialog(this, "ไม่พบไฟล์ผู้ใช้", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -224,10 +181,8 @@ public class Password extends JFrame {
         right.add(Box.createVerticalStrut(10));
         right.add(confirmField);
         right.add(Box.createVerticalStrut(15));
-        right.add(strengthLabel);
-        right.add(Box.createVerticalStrut(10)); 
         right.add(btnPanel);
-        
+
         container.add(left);
         container.add(right);
         add(container);

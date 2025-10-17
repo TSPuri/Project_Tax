@@ -1,4 +1,4 @@
-//package Part_UI.GUI;
+//package GUI;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -113,7 +113,7 @@ public class Login extends JFrame {
             dispose();
             new RegisterUI(); 
         });
-        
+
         loginBtn.addActionListener(e -> {
             String inputID = ID.getText().trim();
             String inputPass = new String(password.getPassword());
@@ -128,16 +128,8 @@ public class Login extends JFrame {
                 return;
             }
 
-            // โหมด admin พิเศษ
-            if (inputID.equals("admin111") && inputPass.equals("AdminPass")) {
-                dispose();
-                new AdminPanelUI();
-                return;
-            }
-
-            // โหลด users.csv
             Map<String, String> userMap = new HashMap<>();
-            try (BufferedReader br = new BufferedReader(new FileReader("Part_Data/users.csv"))) {
+            try (BufferedReader br = new BufferedReader(new FileReader("users.csv"))) {
                 String line;
                 String currentID = null;
                 while ((line = br.readLine()) != null) {
@@ -156,8 +148,7 @@ public class Login extends JFrame {
             }
 
             if (userMap.containsKey(inputID) && userMap.get(inputID).equals(inputPass)) {
-                dispose();
-                new Income(inputID).setVisible(true);
+                
             } else {
                 JOptionPane.showMessageDialog(this, "ID หรือ รหัสผ่านไม่ถูกต้อง", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -187,31 +178,8 @@ public class Login extends JFrame {
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
-
-      
-       
-       
-       
-       
-       
-       
-        //ทำเล่่นๆ
-            password.addActionListener(e -> {
-            String passInput = new String(password.getPassword());
-            if (passInput.equalsIgnoreCase("devmode")) {
-                new DevModeWindow(); // เปิดโหมดลับด้วยคำว่า devmode
-            }
-        });
     }
 
-   
-   
-   
-   
-   
-   
-   
-   
     // ===== Custom TextField =====
     static class WebTextField extends JTextField {
         private String placeholder;
@@ -329,4 +297,6 @@ public class Login extends JFrame {
             super(Color.LIGHT_GRAY, 1, true);
         }
     }
+
 }
+
